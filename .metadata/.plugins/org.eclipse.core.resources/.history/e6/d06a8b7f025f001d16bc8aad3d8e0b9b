@@ -1,0 +1,653 @@
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Base64;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+
+public class Main extends DAO {
+	String font_name = "배달의민족 주아";
+
+	// ----------------------------------------------
+	JFrame main_frame = new JFrame("욱PC방");
+
+	// ---------------------------------------------- 메인
+	JPanel login_main = new JPanel();
+	JLabel login_title = new JLabel("욱PC방");
+
+	// ---------------------------------------------- 로그인 메인
+	int login_count = 0;
+
+	JPanel login_tap_group = new JPanel();
+	JPanel user_tap = new JPanel();
+	JPanel non_user_tap = new JPanel();
+
+	JLabel user_tap_lb = new JLabel("회원");
+	JLabel non_user_tap_lb = new JLabel("비회원");
+
+	// ------------------------------------------------------- 회원/비회원 탭
+	String login_tb_arr[] = { "아이디", "비밀번호", "카드번호" };
+	JTextField login_tb[] = new JTextField[3]; // 아이디
+	JPasswordField pw_tb = new JPasswordField(); // 비밀번호
+
+	// ---------------------------------------------- 아이디, 비밀번호, 카드번호 입력창
+	JLabel login_noti = new JLabel();
+
+	// ---------------------------------------------- 상태 알림
+	JButton login_btn = new JButton("로그인");
+
+	JPanel user_find_reg_group = new JPanel();
+	JLabel user_find_reg_lb = new JLabel("ID/PW 찾기 | 회원가입");
+	JButton user_reg_btn = new JButton("");
+	JButton user_find_btn = new JButton("");
+
+	// ---------------------------------------------- 로그인, ID/PW 찾기, 회원가입 버튼
+	// ---------------------------------------------- 여기까지가 메인 로그인 화면 구성
+	int find_count = 0;
+
+	JPanel find_main = new JPanel();
+	JPanel find_btn_group = new JPanel();
+
+	String find_lb_arr[] = { "ID/PW찾기", "아이디 찾기", "이름     :", "휴대폰 :", "-", "비빌번호 찾기", "아이디 :", "휴대폰 :", "-" };
+	String find_tb_arr[] = { "이름", "010", "휴대폰 번호", "아이디", "010", "휴대폰 번호" };
+	String find_btn_arr[] = { "아이디 찾기", "비밀번호 찾기", "취소" };
+	JButton find_btn[] = new JButton[find_btn_arr.length];
+	JTextField find_tb[] = new JTextField[find_tb_arr.length];
+	JLabel find_lb[] = new JLabel[find_lb_arr.length];
+
+	JLabel find_noti = new JLabel();
+
+	// ---------------------------------------------- 아이디, 비밀번호 찾기
+	private String salt() throws NoSuchAlgorithmException { // salt
+		String salt;
+		SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+		byte[] bytes = new byte[16];
+		random.nextBytes(bytes);
+		return salt = new String(Base64.getEncoder().encode(bytes));
+	}
+
+	private String SHA_256(String m_pw) throws NoSuchAlgorithmException { // sha256
+		String hex;
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		md.update(m_pw.getBytes());
+		return hex = String.format("%064x", new BigInteger(1, md.digest()));
+	}
+
+	String sha(String m_pw) {
+		String temp = "";
+		try {
+			temp = SHA_256(m_pw);
+		} catch (NoSuchAlgorithmException e) {
+		}
+		return temp;
+	}
+
+	String salt_temp() {
+		String temp = "";
+		try {
+			temp = salt();
+		} catch (NoSuchAlgorithmException e) {
+		}
+		return temp;
+	}
+
+	// ------------------------------------------------------- 암호화
+	void Noti(String value, String title) {
+		JOptionPane.showMessageDialog(null, value, title, JOptionPane.PLAIN_MESSAGE);
+	}
+
+	void set_Font(JLabel lb, int size, Color font_color, int horizontalAlignment) { // 폰트
+		lb.setFont(new Font(font_name, Font.PLAIN, size));
+		lb.setForeground(font_color);
+		lb.setHorizontalAlignment(horizontalAlignment);
+	}
+
+	void set_Panel(JPanel pn, Color bg_color) { // 패널
+		pn.setBackground(bg_color);
+		pn.setLayout(null);
+	}
+
+	void set_TextField(JTextField tb, Color boradr_color, int size, Color font_color) { // 텍스트 입력
+		Border border = BorderFactory.createLineBorder(boradr_color, 2);
+		tb.setBorder(border);
+		tb.setBorder(BorderFactory.createCompoundBorder(tb.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+		tb.setFont(new Font(font_name, Font.PLAIN, size));
+		tb.setForeground(font_color);
+	}
+
+	void set_Btn(JButton btn, Color bg_color, int size, Color font_color) { // 버튼
+		btn.setBackground(bg_color);
+		btn.setFont(new Font(font_name, Font.PLAIN, size));
+		btn.setForeground(font_color);
+		btn.setBorderPainted(false);
+		btn.setFocusPainted(false);
+	}
+
+	void hide_btn(JButton btn) { // 투명버튼
+		btn.setBorderPainted(false);
+		btn.setFocusPainted(false);
+		btn.setContentAreaFilled(false);
+	}
+
+	ImageIcon reSize_Img(String src, int x, int y) {
+		ImageIcon icon = new ImageIcon(src);
+		Image img = icon.getImage();
+		Image changeImg = img.getScaledInstance(x, y, Image.SCALE_SMOOTH);
+		ImageIcon changeIcon = new ImageIcon(changeImg);
+		return changeIcon;
+	}
+
+	// ---------------------------------------------- UI설정
+	void tap_swap(JPanel act_jp, JLabel act_lb, JPanel dis_jp, JLabel dis_lb) {
+		for (int i = 0; i < login_tb_arr.length; i++) {
+			set_TextField(login_tb[i], new Color(200, 200, 200), 15, new Color(200, 200, 200));
+			if (login_tb[i].getText().equals("")) {
+				login_tb[i].setText(login_tb_arr[i]);
+			}
+			login_tb[i].setEnabled(false);
+		}
+		set_TextField(pw_tb, new Color(200, 200, 200), 15, new Color(200, 200, 200));
+		// 텍스트필드 초기화
+		set_Panel(act_jp, new Color(0, 120, 215));
+		set_Font(act_lb, 16, Color.white, JLabel.CENTER);
+		set_Panel(dis_jp, new Color(240, 240, 240));
+		set_Font(dis_lb, 16, new Color(0, 120, 215), JLabel.CENTER);
+
+		login_title.requestFocus(); // 포커스 해제를 위해 임시로 지정
+		login_noti.setText("");
+	}
+
+	// ---------------------------------------------- 회원, 비회원 탭
+	// ---------------------------------------------- 메인 로그인 화면
+	void login_tb_reset() {
+		for (int i = 0; i < login_tb_arr.length; i++) {
+			set_TextField(login_tb[i], new Color(200, 200, 200), 15, new Color(200, 200, 200));
+			login_tb[i].setEnabled(false);
+		}
+	}
+
+	void login_tb_sw(int n) {
+		for (int i = 0; i < login_tb_arr.length; i++) {
+			set_TextField(login_tb[i], new Color(200, 200, 200), 15, new Color(200, 200, 200));
+			login_tb[i].setEnabled(false);
+		}
+		set_TextField(pw_tb, new Color(200, 200, 200), 15, new Color(200, 200, 200));
+		set_TextField(login_tb[n], new Color(0, 120, 215), 15, new Color(0, 0, 0));
+
+		login_noti.setText("");
+		login_tb[n].setEnabled(true);
+		login_tb[n].requestFocus();
+
+		if (n == 1) {
+			set_TextField(pw_tb, new Color(0, 120, 215), 15, new Color(0, 0, 0));
+		}
+		if (login_tb[n].getText().equals("아이디")) {
+			login_tb[n].setText("");
+		} else if (login_tb[n].getText().equals("비밀번호")) {
+			login_tb[n].setText("");
+		} else if (login_tb[n].getText().equals("카드번호")) {
+			login_tb[n].setText("");
+		}
+	}
+
+	// ---------------------------------------------- 아이디, 비밀번호, 카드번호 입력
+	void find_tb_sw(int n) {
+		for (int i = 0; i < find_tb_arr.length; i++) {
+			set_TextField(find_tb[i], new Color(200, 200, 200), 15, new Color(200, 200, 200));
+			find_tb[i].setEnabled(false);
+		}
+		if (find_tb[n].getText().equals("이름") || find_tb[n].getText().equals("휴대폰 번호")
+				|| find_tb[n].getText().equals("아이디") || find_tb[n].getText().equals("휴대폰 번호")) {
+			find_tb[n].setText("");
+		}
+		set_TextField(find_tb[n], new Color(0, 120, 215), 15, new Color(0, 0, 0));
+		find_tb[n].setEnabled(true);
+		find_tb[n].requestFocus();
+		if (n == 1 || n == 4) {
+			set_TextField(find_tb[n], new Color(200, 200, 200), 15, new Color(200, 200, 200));
+			find_tb[n].setEnabled(false);
+		}
+	}
+	// ----------------------------------------------------------- ID/PW 찾기
+
+	public Main() {
+		main_frame.setSize(1280, 720);
+		main_frame.setDefaultCloseOperation(main_frame.EXIT_ON_CLOSE);
+		main_frame.setLocationRelativeTo(null);
+		main_frame.setResizable(false);
+		main_frame.setVisible(true);
+		main_frame.getContentPane().setBackground(new Color(240, 240, 240));
+		main_frame.setLayout(null);
+
+		login_frame();
+
+		user_find_btn.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				login_main.setVisible(false);
+				find_frame();
+				find_main.setVisible(true);
+			}
+		});
+
+		user_reg_btn.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+
+			}
+		});
+	}
+
+	public void login_frame() {
+		// ---------------------------------------------- 메인 프레임
+		login_main.setBounds(484, 140, 300, 330);
+		login_main.setBackground(Color.white);
+		login_main.setLayout(null);
+		login_title.setBounds(0, 5, 300, 50);
+		set_Font(login_title, 35, new Color(0, 0, 0), JLabel.CENTER);
+
+		// ---------------------------------------------- 로그인 메인
+		login_tap_group.setBounds(20, 60, 260, 40);
+		login_tap_group.setLayout(null);
+
+		user_tap.setBounds(0, 0, 130, 40); // 회원 탭
+		user_tap_lb.setBounds(0, 0, 130, 40);
+		set_Panel(user_tap, new Color(0, 120, 215));
+		set_Font(user_tap_lb, 16, Color.white, JLabel.CENTER);
+
+		non_user_tap.setBounds(130, 0, 130, 40); // 비회원 탭
+		non_user_tap_lb.setBounds(0, 0, 130, 40);
+		set_Panel(non_user_tap, new Color(240, 240, 240));
+		set_Font(non_user_tap_lb, 16, new Color(0, 120, 215), JLabel.CENTER);
+
+		// ---------------------------------------------- 회원, 비회원 탭
+
+		for (int i = 0; i < login_tb_arr.length; i++) {
+			login_tb[i] = new JTextField(login_tb_arr[i]);
+			set_TextField(login_tb[i], new Color(200, 200, 200), 15, new Color(200, 200, 200));
+			login_tb[i].setEnabled(false);
+			login_tb[i].setDisabledTextColor(new Color(200, 200, 200));
+			login_main.add(login_tb[i]);
+		}
+
+		login_tb[0].setBounds(20, 110, 260, 40); // 아이디 입력
+		login_tb[1].setBounds(20, 160, 260, 40); // 비밀번호 입력
+		login_tb[2].setBounds(20, 110, 260, 40); // 카드번호 입력
+		login_tb[2].setVisible(false);
+
+		pw_tb.setBounds(20, 160, 260, 40); // 입력
+		set_TextField(pw_tb, new Color(200, 200, 200), 15, new Color(200, 200, 200));
+		pw_tb.setEchoChar('*');
+		pw_tb.setVisible(false);
+
+		login_tb[1].addMouseListener(new MouseAdapter() { // 취소
+			public void mouseClicked(MouseEvent e) {
+				login_tb[1].setVisible(false); // 비밀번호 숨김
+				pw_tb.setVisible(true);
+				pw_tb.requestFocus();
+			}
+		});
+
+		// ---------------------------------------------- 아이디, 비밀번호, 카드번호 입력
+		login_noti.setBounds(0, 200, 300, 40);
+		set_Font(login_noti, 18, new Color(220, 0, 0), JLabel.CENTER);
+
+		// ---------------------------------------------- 상태 알림
+		login_btn.setBounds(20, 240, 260, 40);
+		set_Btn(login_btn, new Color(0, 120, 215), 15, new Color(255, 255, 255));
+
+		user_find_reg_group.setBounds(20, 290, 260, 30);
+		user_find_reg_group.setLayout(null);
+		user_find_reg_group.setBackground(Color.white);
+
+		user_find_reg_lb.setBounds(0, -5, 260, 40);
+		set_Font(user_find_reg_lb, 15, Color.black, JLabel.CENTER);
+
+		user_find_btn.setBounds(63, 5, 71, 20);
+		hide_btn(user_find_btn);
+		user_reg_btn.setBounds(145, 5, 53, 20);
+		hide_btn(user_reg_btn);
+
+		// ---------------------------------------------- 로그인, ID/PW 찾기, 회원가입 버튼
+		for (int i = 0; i < login_tb_arr.length; i++) {
+			int n = i;
+			login_tb[i].addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					login_tb_sw(n);
+				}
+			});
+		}
+
+		pw_tb.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				login_tb_sw(2);
+				set_TextField(pw_tb, new Color(0, 120, 215), 15, new Color(0, 0, 0));
+			}
+		});
+
+		// ---------------------------------------------- 입력
+		user_tap.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				login_count = 0;
+				char[] pw = pw_tb.getPassword();
+				tap_swap(user_tap, user_tap_lb, non_user_tap, non_user_tap_lb);
+				login_tb[0].setVisible(true);
+				pw_tb.setVisible(true);
+				if (pw.length == 0) {
+					pw_tb.setVisible(false);
+					login_tb[1].setVisible(true);
+				} else {
+					login_tb[1].setVisible(false);
+				}
+				login_tb[2].setVisible(false);
+			}
+		});
+
+		non_user_tap.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				login_count = 1;
+				tap_swap(non_user_tap, non_user_tap_lb, user_tap, user_tap_lb);
+				login_tb[0].setVisible(false);
+				login_tb[1].setVisible(false);
+				pw_tb.setVisible(false);
+				login_tb[2].setVisible(true);
+			}
+		});
+
+		// ----------------------------------------------
+		login_btn.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				char[] pw = pw_tb.getPassword();
+				if (login_count == 0) {
+					if (login_tb[0].getText().equals("") || login_tb[0].getText().equals("아이디")
+							|| String.valueOf(pw).length() == 0) {
+						login_noti.setText("아이디를 또는 비밀번호를 입력해주세요.");
+					} else {
+						login(login_tb[0].getText(), String.valueOf(pw));
+					}
+				} else {
+					if (login_tb[2].getText().equals("") || login_tb[2].getText().equals("카드번호")) {
+						login_noti.setText("카드번호를 입력해주세요.");
+					} else {
+						login(login_tb[2].getText(), "");
+					}
+				}
+			}
+		});
+		// ---------------------------------------------- 로그인
+		main_frame.add(login_main);
+		login_main.add(login_title);
+		login_main.add(login_tap_group);
+		login_main.add(pw_tb);
+		login_main.add(login_noti);
+		login_main.add(login_btn);
+		login_main.add(user_find_reg_group);
+
+		// ----------------------------------------------
+		user_find_reg_group.add(user_find_reg_lb);
+		user_find_reg_group.add(user_find_btn);
+		user_find_reg_group.add(user_reg_btn);
+
+		// ----------------------------------------------
+		login_tap_group.add(user_tap);
+		login_tap_group.add(non_user_tap);
+		user_tap.add(user_tap_lb);
+		non_user_tap.add(non_user_tap_lb);
+		// ----------------------------------------------
+	}
+
+	// ---------------------------------------------- 로그인
+
+	public void find_frame() {
+		find_main.setBounds(484, 140, 300, 390);
+		find_main.setBackground(Color.white);
+		find_main.setLayout(null);
+		find_main.setVisible(false);
+
+		find_btn_group.setBounds(20, 295, 260, 100);
+		find_btn_group.setBackground(Color.white);
+		find_btn_group.setLayout(null);
+
+		for (int i = 0; i < find_lb_arr.length; i++) {
+			find_lb[i] = new JLabel(find_lb_arr[i]);
+			set_Font(find_lb[i], 18, Color.black, JLabel.LEFT);
+			find_main.add(find_lb[i]);
+		}
+
+		for (int i = 0; i <= 5; i++) {
+			find_tb[i] = new JTextField();
+			find_tb[i].setText(find_tb_arr[i]);
+			set_TextField(find_tb[i], new Color(200, 200, 200), 15, new Color(200, 200, 200));
+			find_tb[i].setDisabledTextColor(new Color(200, 200, 200));
+			find_main.add(find_tb[i]);
+		}
+
+		for (int i = 0; i <= 2; i++) {
+			find_btn[i] = new JButton(find_btn_arr[i]);
+			set_Btn(find_btn[i], new Color(0, 120, 215), 15, new Color(255, 255, 255));
+			find_btn_group.add(find_btn[i]);
+		}
+
+		find_lb[0].setBounds(20, 0, 260, 50);
+		set_Font(find_lb[0], 25, new Color(0, 0, 0), JLabel.CENTER);
+
+		find_lb[1].setBounds(20, 40, 260, 50); // 아이디 찾기
+
+		find_lb[2].setBounds(20, 75, 260, 50); // 이름 :
+		find_tb[0].setBounds(85, 85, 195, 30);
+
+		find_lb[3].setBounds(20, 115, 260, 50); // 핸드폰 :
+		find_tb[1].setBounds(85, 125, 60, 30);
+		find_tb[1].setHorizontalAlignment(JLabel.CENTER);
+		find_tb[1].setEnabled(false);
+
+		find_lb[4].setBounds(150, 115, 260, 50); // -
+		find_tb[2].setBounds(165, 125, 115, 30);
+
+		find_lb[5].setBounds(20, 150, 260, 50); // 아이디 찾기
+
+		find_lb[6].setBounds(20, 185, 260, 50); // 아이디 :
+		find_tb[3].setBounds(85, 195, 195, 30);
+
+		find_lb[7].setBounds(20, 225, 260, 50); // 핸드폰 :
+		find_tb[4].setBounds(85, 235, 60, 30);
+		find_tb[4].setHorizontalAlignment(JLabel.CENTER);
+		find_tb[4].setEnabled(false);
+
+		find_lb[8].setBounds(150, 225, 260, 50); // 핸드폰 :
+		find_tb[5].setBounds(165, 235, 115, 30);
+
+		find_btn[0].setBounds(0, 0, 125, 40);
+		find_btn[1].setBounds(135, 0, 125, 40);
+		find_btn[2].setBounds(0, 45, 260, 40);
+		set_Btn(find_btn[2], new Color(220, 0, 0), 15, new Color(255, 255, 255));
+
+		find_noti.setBounds(20, 260, 260, 40);
+		set_Font(find_noti, 18, new Color(220, 0, 0), JLabel.CENTER);
+		// ------------------------------------------------------- 입력 및 버튼
+
+		for (int i = 0; i < find_tb_arr.length; i++) {
+			int n = i;
+			find_tb[i].addMouseListener(new MouseAdapter() { // 입력
+				public void mouseClicked(MouseEvent e) {
+					find_tb_sw(n);
+				}
+			});
+		}
+
+		find_btn[0].addMouseListener(new MouseAdapter() { // 아이디 찾기
+			public void mouseClicked(MouseEvent e) {
+				find_count = 0;
+				String name = find_tb[0].getText();
+				String phone = "010" + find_tb[2].getText();
+
+				for (int i = 0; i < 3; i++) {
+					set_TextField(find_tb[i], new Color(200, 200, 200), 15, new Color(200, 200, 200));
+				}
+				find_noti.setText("");
+				if (name.equals("") || name.equals("이름") || name.length() > 10) {
+					find_noti.setText("이름을 정확하게 입력하세요.");
+					set_TextField(find_tb[0], new Color(220, 0, 0), 15, new Color(200, 200, 200));
+				} else if (find_tb[2].getText().equals("") || find_tb[2].getText().equals("휴대폰 번호")
+						|| find_tb[2].getText().length() < 8 || find_tb[2].getText().length() > 8) {
+					find_noti.setText("휴대폰 번호를 정확하게 입력하세요.");
+					set_TextField(find_tb[2], new Color(220, 0, 0), 15, new Color(200, 200, 200));
+				} else {
+					// find_DB(name, phone);
+				}
+			}
+		});
+
+		find_btn[1].addMouseListener(new MouseAdapter() { // 비밀번호 찾기
+			public void mouseClicked(MouseEvent e) {
+				find_count = 1;
+				String id = find_tb[3].getText();
+				String phone = "010" + find_tb[5].getText();
+
+				for (int i = 3; i < find_tb.length; i++) {
+					set_TextField(find_tb[i], new Color(200, 200, 200), 15, new Color(200, 200, 200));
+				}
+				find_noti.setText("");
+				if (id.equals("") || id.equals("아이디") || id.length() > 10 || id.length() < 4) {
+					find_noti.setText("아이디를 정확하게 입력하세요.");
+					set_TextField(find_tb[3], new Color(220, 0, 0), 15, new Color(200, 200, 200));
+				} else if (find_tb[5].getText().equals("") || find_tb[5].getText().equals("휴대폰 번호")
+						|| find_tb[5].getText().length() < 8 || find_tb[5].getText().length() > 8) {
+					find_noti.setText("휴대폰 번호를 정확하게 입력하세요.");
+					set_TextField(find_tb[5], new Color(220, 0, 0), 15, new Color(200, 200, 200));
+				} else {
+					// find_DB(id, phone);
+				}
+			}
+		});
+
+		find_btn[2].addMouseListener(new MouseAdapter() { // 취소
+			public void mouseClicked(MouseEvent e) {
+				find_main.setVisible(false);
+				login_main.setVisible(true);
+			}
+		});
+
+		// ----------------------------------------------------------- 버튼
+		main_frame.add(find_main);
+		find_main.add(find_noti);
+		find_main.add(find_btn_group);
+	}
+
+	// ----------------------------------------------------------- 프레임 
+	public void login(String user_id, String user_pw) { // 로그인
+		try {
+			String SQL;
+			conn = DriverManager.getConnection(url, id, pw);
+			if (login_count == 0) {
+				SQL = "Select * from member where m_id=?";
+				pstmt = conn.prepareStatement(SQL);
+				pstmt.setString(1, user_id);
+			} else {
+				SQL = "Select * from non_member where nm_card =?";
+				pstmt = conn.prepareStatement(SQL);
+				pstmt.setString(1, user_id);
+			}
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) { // 정보가 존재할 때
+				if (login_count == 0) {
+					if (rs.getString("m_id").equals("admin")) {
+						if (rs.getString("m_pw").equals(sha(rs.getString("m_salt") + user_pw))) {
+							System.out.println("관리자접속");
+						} else {
+							login_noti.setText("아이디 또는 비밀번호를 다시 입력해주세요.");
+						}
+					} else if (rs.getString("m_id").equals(user_id)) {
+						if (rs.getString("m_pw").equals(sha(rs.getString("m_salt") + user_pw))) {
+							System.out.println("유저접속");
+						} else {
+							login_noti.setText("아이디 또는 비밀번호를 다시 입력해주세요.");
+						}
+					}
+				} else {
+					if (rs.getString("nm_card").equals(user_id)) {
+						System.out.println("카드접속시도");
+					}
+				}
+			} else { // 정보가 존재하지않을 때
+				if (login_count == 0) {
+					login_noti.setText("아이디 또는 비밀번호를 다시 입력해주세요.");
+				} else {
+					login_noti.setText("카드번호를 다시 입력해주세요.");
+					set_TextField(login_tb[2], new Color(220, 0, 0), 15, new Color(0, 0, 0));
+				}
+			}
+			pstmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	// ----------------------------------------------------------- 로그인 DB
+	
+	public void find_DB(String m_name, String m_cell) { // 아이디 & 비밀번호 찾기
+		String SQL;
+		String star = "********";
+		try {
+			conn = DriverManager.getConnection(url, id, pw);
+			if (find_count == 0) {
+				SQL = "select * from member where m_name = ? and m_cell =? and m_name not in('관리자')";
+				pstmt = conn.prepareStatement(SQL);
+				pstmt.setString(1, m_name);
+				pstmt.setString(2, m_cell);
+				ResultSet rs = pstmt.executeQuery();
+
+				if (rs.next()) {
+					String m_id = rs.getString("m_id");
+					find_noti.setText(
+							m_name + "님의 아이디는 " + m_id.substring(0, 2) + star.substring(0, m_id.length() - 2) + "입니다.");
+				} else {
+					find_noti.setText("일치하는 아이디가 없습니다.");
+				}
+			} else {
+				SQL = "select * from member where m_id = ? and m_cell =? and m_name not in('admin')";
+				pstmt = conn.prepareStatement(SQL);
+				pstmt.setString(1, m_name);
+				pstmt.setString(2, m_cell);
+				ResultSet rs = pstmt.executeQuery();
+
+				if (rs.next()) {
+					int result = JOptionPane.showConfirmDialog(null, "임시 비밀번호를 발급하겠습니까?", "알림",
+							JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
+					if (result == JOptionPane.YES_OPTION) {
+						temp_pw(rs.getString("m_id"));
+						find_noti.setText("");
+					} else {
+						System.out.println("발급 취소");
+						find_noti.setText("");
+					}
+				} else {
+					find_noti.setText("일치하는 정보가 없습니다.");
+				}
+			}
+			pstmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	// ----------------------------------------------------------- 찾기 DB, 임시비밀번호
+	
+	
+	
+	// ----------------------------------------------------------- DB
+
+	public static void main(String[] args) {
+		Main m = new Main();
+	}
+}
