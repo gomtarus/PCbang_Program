@@ -1,0 +1,17 @@
+import javax.swing.*;
+
+public class Order_Form {
+	JFrame order_frame = new JFrame("상품 주문");
+
+	public Order_Form() {
+		order_frame.setSize(1280, 720);
+		order_frame.setDefaultCloseOperation(order_frame.DISPOSE_ON_CLOSE);
+		order_frame.setLocationRelativeTo(null);
+		order_frame.setResizable(false);
+		order_frame.setVisible(true);
+	}
+
+	public static void main(String[] args) {
+		Order_Form of = new Order_Form();
+	}
+}

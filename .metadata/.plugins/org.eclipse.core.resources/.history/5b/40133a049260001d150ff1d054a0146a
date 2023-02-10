@@ -1,0 +1,29 @@
+import java.awt.Color;
+import java.text.DecimalFormat;
+
+import javax.swing.*;
+
+public class Order_Form {
+	DecimalFormat format = new DecimalFormat("#,###");
+	String font_name = "배달의민족 주아";
+	
+	// ---------------------------------------------- 설정 관련
+	JFrame order_main = new JFrame("상품 주문");
+
+	public Order_Form() {
+		order_main.setSize(1280, 720);
+		order_main.setDefaultCloseOperation(order_main.DISPOSE_ON_CLOSE);
+		order_main.setLocationRelativeTo(null);
+		order_main.setResizable(false);
+		order_main.setVisible(true);
+		order_main.getContentPane().setBackground(Color.white);
+		
+		// ---------------------------------------------- 메인 프레임
+
+		
+	}
+
+	public static void main(String[] args) {
+		Order_Form of = new Order_Form();
+	}
+}

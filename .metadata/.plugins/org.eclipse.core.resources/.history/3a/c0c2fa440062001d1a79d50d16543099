@@ -1,0 +1,521 @@
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+
+public class Order_Form extends DAO {
+	DecimalFormat format = new DecimalFormat("#,###");
+	String font_name = "배달의민족 주아";
+
+	// ---------------------------------------------- 설정 관련
+	ArrayList<String> menu_name_array = new ArrayList<String>(); // 이름
+	ArrayList<String> menu_price_array = new ArrayList<String>(); // 가격
+	ArrayList<String> menu_type_array = new ArrayList<String>(); // 타입
+	ArrayList<String> menu_img_array = new ArrayList<String>(); // 이미지
+
+	LinkedHashMap<String, Integer> table_list = new LinkedHashMap();
+	ArrayList<String> table_list_temp = new ArrayList<String>(); // 순서 추출용
+
+	// ---------------------------------------------- 메뉴
+	JFrame order_main = new JFrame("상품 주문");
+
+	// ---------------------------------------------- 메인 프레임
+	JPanel top_menu = new JPanel();
+	JPanel menu_btn_group = new JPanel();
+
+	String menu_btn_arr[] = { "밥류", "면류", "튀김류", "과자류", "음료류", "기타" };
+	JButton menu_btn[] = new JButton[menu_btn_arr.length];
+	JPanel menu_item_group[] = new JPanel[menu_btn.length + 1];// 메뉴 + 검색창 한개 추가
+
+	JPanel order_search_group = new JPanel(); // 검색 창
+	JTextField order_search_tb = new JTextField("검색");
+	JButton order_search_btn = new JButton(reSize_Img("Img/Src/search_icon.png", 35, 35));
+
+	// ---------------------------------------------- 메뉴 영역
+	JPanel order_list_main = new JPanel();
+
+	String order_list_lb_arr[] = { "", "", "주문 목록", "총 금액 : 0원", "결제방식", "요청사항" };
+	JLabel order_list_lb[] = new JLabel[order_list_lb_arr.length];
+
+	// ---------------------------------------------- 기본 틀
+	String order_row[] = { "이름", "수량", "가격" };
+	DefaultTableModel order_model = new DefaultTableModel(order_row, 0) {
+		public boolean isCellEditable(int rowIndex, int mColIndex) {
+			return false;
+		}
+	};
+
+	JTable order_table = new JTable(order_model);
+	JScrollPane order_scrollpane = new JScrollPane(order_table);
+
+	// ---------------------------------------------- 주문 리스트 테이블
+	int order_total = 0;
+
+	JPanel order_calc_group = new JPanel();
+	JLabel order_calc_count = new JLabel();
+	JButton order_calc_plus = new JButton("+");
+	JButton order_clac_minus = new JButton("-");
+
+	// ---------------------------------------------- 주문 목록
+	ButtonGroup order_cost_type_1 = new ButtonGroup(); // 현금 & 카드
+	ButtonGroup order_cost_type_2 = new ButtonGroup(); // 선불 & 후불
+
+	String order_radio_arr[] = { "현금", "카드", "선불", "후불", "", "" };
+	JRadioButton[] order_radio_btn = new JRadioButton[order_radio_arr.length];
+
+	String order_radio_1 = "";
+	String order_radio_2 = "";
+
+	// ---------------------------------------------- 결제방식 선택
+	JTextArea order_send_text = new JTextArea();
+
+	// ---------------------------------------------- 요청 사항
+	String order_btn_arr[] = { "삭제", "초기화", "주문" };
+	JButton order_btn[] = new JButton[order_btn_arr.length];
+	JPanel order_btn_group = new JPanel();
+
+	// ---------------------------------------------- 삭제, 초기화, 주문 버튼
+	String order_Date() {
+		LocalDateTime now = LocalDateTime.now();
+		String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd/HH:mm:ss"));
+		return formatedNow;
+	}
+
+	void Noti(String value, String title) {
+		JOptionPane.showMessageDialog(null, value, title, JOptionPane.PLAIN_MESSAGE);
+	}
+
+	ImageIcon reSize_Img(String src, int x, int y) {
+		ImageIcon icon = new ImageIcon(src);
+		Image img = icon.getImage();
+		Image changeImg = img.getScaledInstance(x, y, Image.SCALE_SMOOTH);
+		ImageIcon changeIcon = new ImageIcon(changeImg);
+		return changeIcon;
+	}
+
+	void set_Border(JTextField tb, Color color) {
+		Border border = BorderFactory.createLineBorder(color, 2);
+		tb.setBorder(border);
+		tb.setBorder(BorderFactory.createCompoundBorder(tb.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+	}
+
+	void set_Font(JLabel lb, int size, Color color, int horizon) {
+		lb.setFont(new Font(font_name, Font.PLAIN, size));
+		lb.setForeground(color);
+		lb.setHorizontalAlignment(horizon);
+	}
+
+	void menu_layout(JPanel pa) {
+		pa.setBounds(0, 60, 935, 625);
+		pa.setLayout(new FlowLayout(FlowLayout.LEFT));
+		pa.setBackground(new Color(240, 240, 240));
+	}
+
+	void set_Btn(JButton btn, int size, Color bg_color, Color font_color, Dimension dm) {
+		btn.setBackground(bg_color);
+		btn.setFont(new Font(font_name, Font.PLAIN, 15));
+		btn.setForeground(font_color);
+		btn.setBorderPainted(false);
+		btn.setFocusPainted(false);
+		btn.setPreferredSize(dm);
+	}
+
+	void set_TextField(JTextField tb, Color br_line, Color font_color) {
+		Border border = BorderFactory.createLineBorder(br_line, 2);
+		tb.setBorder(border);
+		tb.setBorder(BorderFactory.createCompoundBorder(tb.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+		tb.setFont(new Font(font_name, Font.PLAIN, 15));
+		tb.setForeground(font_color);
+	}
+
+	void table_Center(JTable tb, int count) {
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
+		for (int i = 0; i < tb.getColumnCount(); i++) {
+			tb.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+		}
+	}
+
+	// ---------------------------------------------- UI설정
+
+	public void menu_sw(int n) {
+		for (int i = 0; i < menu_btn_arr.length; i++) {
+			set_Btn(menu_btn[i], 15, new Color(240, 240, 240), new Color(0, 120, 215), new Dimension(90, 35));
+			menu_item_group[i].setVisible(false);
+		}
+		menu_item_group[6].setVisible(false);
+		set_Btn(menu_btn[n], 15, new Color(0, 120, 215), new Color(255, 255, 255), new Dimension(90, 35));
+		// 메뉴 버튼
+		set_Btn(order_search_btn, 15, new Color(200, 200, 200), new Color(200, 200, 200), new Dimension(35, 35));
+		set_TextField(order_search_tb, new Color(200, 200, 200), new Color(200, 200, 200));
+		menu_item_group[n].setVisible(true);
+		order_search_btn.setEnabled(false);
+	}
+
+	// ---------------------------------------------- 메뉴 탭
+
+	public Order_Form() {
+		order_main.setSize(1280, 720);
+		order_main.setDefaultCloseOperation(order_main.DISPOSE_ON_CLOSE);
+		order_main.setLocationRelativeTo(null);
+		order_main.setResizable(false);
+		order_main.getContentPane().setBackground(Color.white);
+		order_main.setLayout(null);
+
+		// ---------------------------------------------- 메인 프레임
+		table_Center(order_table, 3); // 테이블 가운데 정렬
+		top_menu(); // 탭 생성
+		order_list_main(); // 주문 목록 생성
+		menu_DB(); // 메뉴 DB 불러옴과 동시에 생성
+	}
+
+	public void top_menu() { // 메뉴 목록
+		top_menu.setBounds(0, 0, 935, 60);
+		top_menu.setBackground(new Color(230, 230, 230));
+		top_menu.setLayout(null);
+
+		menu_btn_group.setBounds(0, 5, 935, 50);
+		menu_btn_group.setBackground(new Color(230, 230, 230));
+		menu_btn_group.setLayout(new FlowLayout());
+
+		for (int i = 0; i < menu_btn_arr.length; i++) { // 메뉴 버튼
+			menu_btn[i] = new JButton(menu_btn_arr[i]);
+			set_Btn(menu_btn[i], 15, new Color(240, 240, 240), new Color(0, 120, 215), new Dimension(90, 35));
+			menu_btn_group.add(menu_btn[i]);
+		}
+
+		for (int i = 0; i < menu_item_group.length; i++) { // 메뉴 페이지
+			menu_item_group[i] = new JPanel();
+			menu_layout(menu_item_group[i]);
+			menu_item_group[i].setVisible(false);
+			order_main.add(menu_item_group[i]);
+		}
+
+		order_search_group.setPreferredSize(new Dimension(214, 35)); // 검색창
+		order_search_group.setLayout(null);
+
+		order_search_tb.setBounds(0, 0, 179, 35);
+		set_TextField(order_search_tb, new Color(200, 200, 200), new Color(200, 200, 200));
+
+		order_search_btn.setBounds(179, 0, 35, 35);
+		set_Btn(order_search_btn, 15, new Color(200, 200, 200), new Color(200, 200, 200), new Dimension(35, 35));
+		order_search_btn.setEnabled(false);
+
+		menu_item_group[0].setVisible(true); // 초기 첫 페이지만 보이게함
+		set_Btn(menu_btn[0], 15, new Color(0, 120, 215), new Color(255, 255, 255), new Dimension(90, 35));
+
+		for (int i = 0; i < menu_btn_arr.length; i++) { // 페이지 전환
+			int num = i;
+			menu_btn[i].addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					menu_sw(num);
+				}
+			});
+		}
+
+		order_main.add(top_menu);
+		top_menu.add(menu_btn_group);
+		menu_btn_group.add(order_search_group);
+		order_search_group.add(order_search_tb);
+		order_search_group.add(order_search_btn);
+
+	}
+
+	public void order_list_main() { // 주문 목록
+		order_list_main.setBounds(935, 0, 333, 720);
+		order_list_main.setLayout(null);
+		order_list_main.setBackground(new Color(220, 220, 220));
+
+		for (int i = 0; i < order_list_lb_arr.length; i++) {
+			order_list_lb[i] = new JLabel(order_list_lb_arr[i]);
+			set_Font(order_list_lb[i], 20, new Color(0, 0, 0), JLabel.LEFT);
+			order_list_main.add(order_list_lb[i]);
+		}
+
+		order_list_lb[0].setBounds(5, 0, 323, 30); // ??번자리
+		set_Font(order_list_lb[0], 15, new Color(0, 0, 0), JLabel.LEFT);
+
+		order_list_lb[1].setBounds(5, 25, 323, 30); // ~~님
+		set_Font(order_list_lb[1], 15, new Color(0, 0, 0), JLabel.LEFT);
+
+		order_list_lb[2].setBounds(5, 55, 323, 30); // 주문리스트
+
+		order_list_lb[3].setBounds(5, 375, 323, 30); // 주문금액 : 0원
+		order_list_lb[4].setBounds(5, 405, 323, 30); // 결제방식
+
+		// ---------------------------------------------- 기본 틀
+		order_table.getTableHeader().setReorderingAllowed(false);
+		order_table.getTableHeader().setResizingAllowed(false);
+
+		order_scrollpane.getViewport().setBackground(Color.white);
+		order_scrollpane.setBounds(0, 88, 333, 250);
+
+		Border border = BorderFactory.createLineBorder(new Color(220, 220, 220), 5);
+		order_scrollpane.setBorder(border);
+
+		order_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		// ---------------------------------------------- 주문 리스트 테이블
+
+		order_calc_group.setBounds(0, 336, 333, 40);
+		order_calc_group.setBackground(new Color(220, 220, 220));
+
+		set_Btn(order_calc_plus, 20, new Color(0, 120, 215), new Color(255, 255, 255), new Dimension(45, 30));
+		set_Btn(order_clac_minus, 20, new Color(192, 0, 0), new Color(255, 255, 255), new Dimension(45, 30));
+
+		order_calc_count.setText("0");
+		set_Font(order_calc_count, 20, new Color(0, 0, 0), JLabel.CENTER);
+		order_calc_count.setPreferredSize(new Dimension(60, 30));
+
+		// ---------------------------------------------- 주문 목록 계산(더하기, 뺴기) 버튼
+		for (int i = 0; i < order_radio_arr.length; i++) { // 라디오 박스
+			order_radio_btn[i] = new JRadioButton(order_radio_arr[i]);
+			order_radio_btn[i].setBackground(new Color(220, 220, 220));
+			order_radio_btn[i].setFont(new Font(font_name, Font.PLAIN, 15));
+			order_radio_btn[i].setForeground(Color.black);
+			order_list_main.add(order_radio_btn[i]);
+		}
+		order_cost_type_1.add(order_radio_btn[0]); // 카드
+		order_cost_type_1.add(order_radio_btn[1]);
+		order_cost_type_1.add(order_radio_btn[4]); // 가짜버튼
+
+		order_cost_type_2.add(order_radio_btn[2]); // 현금
+		order_cost_type_2.add(order_radio_btn[3]);
+		order_cost_type_2.add(order_radio_btn[5]); // 가짜버튼
+
+		order_radio_btn[0].setBounds(3, 435, 50, 20);
+		order_radio_btn[1].setBounds(63, 435, 50, 20);
+		order_radio_btn[2].setBounds(123, 435, 50, 20);
+		order_radio_btn[3].setBounds(183, 435, 50, 20);
+		order_radio_btn[2].setEnabled(false);
+		order_radio_btn[3].setEnabled(false);
+
+		// ---------------------------------------------- 결제 방식
+		order_list_lb[5].setBounds(5, 455, 323, 30); // 요청사항
+
+		order_send_text.setLineWrap(true); // 자동 줄바꿈
+		JScrollPane order_send_scroll = new JScrollPane(order_send_text);
+
+		order_send_scroll.setBounds(0, 485, 333, 130);
+		order_send_scroll.setBorder(border);
+
+		// ---------------------------------------------- 요청 사항
+		order_btn_group.setBounds(0, 620, 333, 50);
+		order_btn_group.setBackground(new Color(220, 220, 220));
+		order_btn_group.setLayout(new FlowLayout());
+
+		for (int i = 0; i < order_btn_arr.length; i++) {
+			order_btn[i] = new JButton(order_btn_arr[i]);
+			set_Btn(order_btn[i], 15, new Color(0, 120, 215), new Color(255, 255, 255), new Dimension(105, 40));
+			order_btn_group.add(order_btn[i]);
+		}
+
+		order_btn[0].setBackground(new Color(192, 0, 0));
+		order_btn[1].setBackground(new Color(192, 0, 0));
+
+		// ---------------------------------------------- 버튼
+		order_main.add(order_list_main);
+
+		order_list_main.add(order_scrollpane);
+		order_list_main.add(order_calc_group);
+		order_list_main.add(order_send_scroll);
+		order_list_main.add(order_btn_group);
+
+		order_calc_group.add(order_clac_minus);
+		order_calc_group.add(order_calc_count);
+		order_calc_group.add(order_calc_plus);
+	}
+
+	// ---------------------------------------------- UI
+
+	public void menu_list() {
+
+	}
+
+	// ---------------------------------------------- 음식 목록
+	public void search_menu_list() {
+
+	}
+
+	// ---------------------------------------------- 검색된 음식 목록
+
+	public void menu_DB() { // 메뉴 불러오기
+		try {
+			conn = DriverManager.getConnection(url, id, pw);
+			String SQL = "select * from menu";
+			pstmt = conn.prepareStatement(SQL);
+			ResultSet rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				menu_name_array.add(rs.getString("m_name"));
+				menu_type_array.add(rs.getString("m_type"));
+				menu_price_array.add(rs.getString("m_price"));
+				menu_img_array.add(rs.getString("m_img"));
+			}
+			pstmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		// ---------------------------------------------------
+		int menu_count = menu_name_array.size(); // 메뉴 생성
+		JPanel[] menu_panel = new JPanel[menu_count];
+		JLabel[] menu_name = new JLabel[menu_count];
+		JLabel[] menu_price = new JLabel[menu_count];
+		JLabel[] menu_img = new JLabel[menu_count];
+		JButton[] menu_btn = new JButton[menu_count];
+
+		// ----------------------------------------------------- 음식 리스트
+		for (int i = 0; i < menu_count; i++) { // 음식 리스트 생성
+			menu_panel[i] = new JPanel();
+			menu_panel[i].setPreferredSize(new Dimension(150, 150));
+			menu_panel[i].setBackground(Color.white);
+			menu_panel[i].setLayout(null);
+			// ----------------------------------------------------- 메인 패널
+			menu_img[i] = new JLabel(reSize_Img(menu_img_array.get(i), 105, 105));
+			menu_img[i].setBounds(0, 5, 150, 105);
+			menu_img[i].setHorizontalAlignment(JLabel.CENTER);
+			// ----------------------------------------------------- 이미지
+			menu_name[i] = new JLabel(menu_name_array.get(i));
+			menu_name[i].setBounds(0, 98, 150, 50);
+			set_Font(menu_name[i], 15, new Color(0, 0, 0), JLabel.CENTER);
+			// ----------------------------------------------------- 이름
+			menu_price[i] = new JLabel(format.format(Integer.parseInt(menu_price_array.get(i))) + "원");
+			menu_price[i].setBounds(0, 114, 150, 50);
+			set_Font(menu_price[i], 13, new Color(0, 0, 0), JLabel.CENTER);
+			// ----------------------------------------------------- 가격
+			menu_btn[i] = new JButton();
+			menu_btn[i].setSize(150, 150);
+			menu_btn[i].setBorderPainted(false);
+			menu_btn[i].setFocusPainted(false);
+			menu_btn[i].setContentAreaFilled(false);
+			// ----------------------------------------------------- 버튼
+			menu_panel[i].add(menu_img[i]);
+			menu_panel[i].add(menu_name[i]);
+			menu_panel[i].add(menu_price[i]);
+			menu_panel[i].add(menu_btn[i]);
+			// ----------------------------------------------------- 분류
+			if (menu_type_array.get(i).equals("밥류")) {
+				menu_item_group[0].add(menu_panel[i]);
+			} else if (menu_type_array.get(i).equals("면류")) {
+				menu_item_group[1].add(menu_panel[i]);
+			} else if (menu_type_array.get(i).equals("튀김류")) {
+				menu_item_group[2].add(menu_panel[i]);
+			} else if (menu_type_array.get(i).equals("과자류")) {
+				menu_item_group[3].add(menu_panel[i]);
+			} else if (menu_type_array.get(i).equals("음료류")) {
+				menu_item_group[4].add(menu_panel[i]);
+			} else {
+				menu_item_group[5].add(menu_panel[i]);
+			}
+		}
+
+		for (int i = 0; i < menu_name_array.size(); i++) { // 일반 창에서 선택
+			int n = i;
+			menu_btn[i].addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					String name = menu_name_array.get(n);
+					int price = Integer.parseInt(menu_price_array.get(n));
+					add_list(name, price);
+				}
+			});
+		}
+
+		order_clac_minus.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				int row = order_table.getSelectedRow();
+
+				if (row == -1) {
+					Noti("선택된 값이 없습니다.", "알림");
+				} else {
+					int count = (int) order_table.getValueAt(row, 1);
+					String price_temp = ((String) order_table.getValueAt(row, 2)).replaceAll("[^0-9]", "");
+					int price = (Integer.parseInt(price_temp) / count);
+					String name = (String) order_table.getValueAt(row, 0);
+
+					order_calc_count.setText(String.valueOf(count - 1));
+					order_table.setValueAt((count - 1), row, 1); // 수량 수정
+					order_table.setValueAt(format.format(price * (count - 1)) + "원", row, 2); // 가격 수정
+
+					order_total -= price;
+					order_list_lb[3].setText("총 금액 : " + format.format(order_total) + "원");
+
+					if (count == 1) {
+						order_model.removeRow(row);
+						table_list.remove(name);
+						table_list_temp.remove(name);
+						// 0가 되어 삭제가되면 배열에서도 제거
+					}
+				}
+			}
+		});
+
+		order_calc_plus.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				int row = order_table.getSelectedRow();
+
+				if (row == -1) {
+					Noti("선택된 값이 없습니다.", "알림");
+				} else {
+					int count = (int) order_table.getValueAt(row, 1);
+					String price_temp = ((String) order_table.getValueAt(row, 2)).replaceAll("[^0-9]", "");
+					int price = (Integer.parseInt(price_temp) / count);
+					String name = (String) order_table.getValueAt(row, 0);
+
+					order_calc_count.setText(String.valueOf(count + 1));
+					order_table.setValueAt((count + 1), row, 1); // 수량 수정
+					order_table.setValueAt(format.format(price * (count + 1)) + "원", row, 2); // 가격 수정
+
+					order_total += price;
+					order_list_lb[3].setText("총 금액 : " + format.format(order_total) + "원");
+				}
+			}
+		});
+
+		order_table.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				int row = order_table.getSelectedRow();
+
+				int count = (int) order_table.getValueAt(row, 1);
+				order_calc_count.setText(String.valueOf(count));
+			}
+		});
+	}
+
+	public void add_list(String name, int num) {
+		int row = table_list_temp.indexOf(name);
+		order_table.clearSelection();
+		if (table_list.get(name) == null) {
+			table_list.put(name, num);
+			table_list_temp.add(name);
+			order_model.addRow(new Object[] { name, 1, format.format(num) + "원" });
+		} else {
+			int count = (int) order_table.getValueAt(row, 1);
+			order_calc_count.setText(String.valueOf(count + 1));
+			order_table.setValueAt((count + 1), row, 1); // 수량 수정
+			order_table.setValueAt(format.format(num * (count + 1)) + "원", row, 2); // 가격 수정
+		}
+		order_total += num;
+		order_list_lb[3].setText("총 금액 : " + format.format(order_total) + "원");
+	}
+
+	// ---------------------------------------------- DB
+}
