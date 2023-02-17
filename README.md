@@ -45,7 +45,28 @@ ex. salt = /9UFR5IJObK0t9QQ9oPaYQ== 비밀번호 = 1234 ====> /9UFR5IJObK0t9QQ9o
 - 주문한 내역은 주문내역을 통해 확인 가능합니다.<br><br>
 
 # 화면 설명(관리자) #
-![Untitled-1](https://user-images.githubusercontent.com/118651919/218269352-ade93e89-72b7-4678-93ef-325c4641f339.png)
-### 메인 <br>
-- 회원, 비회원 로그인 및 ID/PW 찾기, 회원 가입으로 구성되어있습니다.
-- 회원의 경우 생성한 아이디 비회원의 경우 카드 번호를 입력합니다.
+![Layer 23](https://user-images.githubusercontent.com/118651919/219673617-c8bc304e-992d-4c26-b6ca-3f3678aa4fff.png)<br>
+![Layer 22](https://user-images.githubusercontent.com/118651919/219674952-0a8295b7-18b0-4ad8-8e7d-7049a1895aef.png)
+
+### 좌석관리 <br>
+- 좌석을 추가 및 삭제 할 수 있습니다.
+- 삭제 및 추가 상태에서 자리를 누르면 삭제 및 추가가 가능합니다.
+- 요청된 주문을 확인 할 수 있습니다.<br><br>
+
+![Layer 25](https://user-images.githubusercontent.com/118651919/219674462-dddcef45-3024-4a6f-8ab4-4625e4913724.png)<br>
+![Layer 24](https://user-images.githubusercontent.com/118651919/219674524-3ac1ce4d-9c8f-4b7d-a024-6e2ba23bce49.png)<br>
+![Layer 26](https://user-images.githubusercontent.com/118651919/219674531-193b017b-1bbd-4bb7-a66e-d36870264c62.png)
+
+### 회원관리 <br>
+- 회원을 추가, 검색, 정보 수정을 할 수 있습니다.
+- 회원 비밀번호는 변경이 불가합니다.<br><br>
+
+![Layer 17](https://user-images.githubusercontent.com/118651919/219674805-1f045ba1-0e4c-4173-a78a-e4cb136cd472.png)<br>
+![Layer 18](https://user-images.githubusercontent.com/118651919/219674815-423ccb5f-87b0-4c95-baca-5be2388e1ad1.png)<br>
+![Layer 19](https://user-images.githubusercontent.com/118651919/219674821-a2908f92-0813-4271-8bb3-a115d4ff4d1d.png)<br>
+![Layer 20](https://user-images.githubusercontent.com/118651919/219674825-31e7dc37-f21e-41d3-9487-0b386bdd2058.png)
+
+### 메뉴관리 <br>
+- 메뉴를 추가, 검색, 수정을 할 수 있습니다.
+- 회원 비밀번호는 변경이 불가합니다.
+
