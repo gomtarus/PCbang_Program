@@ -27,5 +27,6 @@ ex. salt = /9UFR5IJObK0t9QQ9oPaYQ== 비밀번호 = 1234 ====> /9UFR5IJObK0t9QQ9o
 - 비밀번호의 경우 보안을 위해 재발급만 허용합니다.
 - 비밀번호 재발급 시 다시 유저 데이터에 새로운 m_salt값이 갱신됩니다.<br><br>
 
-![Untitled-1](https://user-images.githubusercontent.com/118651919/219654308-d8495061-ad80-4b9c-b56d-e4bf1900a6ca.png)
-### ID/PW 찾기 <br>
+![1234](https://user-images.githubusercontent.com/118651919/219657915-4ccee8bf-e6cc-4afb-8888-42b952c53a87.png)
+### 상태 창 <br>
+- 상단에 남은시간, 사용시간, 사용자 이름, 자리가 표시되고 주문하기, 카운터 연락, 사용종료 메뉴가 있습니다.
