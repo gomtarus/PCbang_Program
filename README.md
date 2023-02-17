@@ -30,3 +30,15 @@ ex. salt = /9UFR5IJObK0t9QQ9oPaYQ== 비밀번호 = 1234 ====> /9UFR5IJObK0t9QQ9o
 ![1234](https://user-images.githubusercontent.com/118651919/219657915-4ccee8bf-e6cc-4afb-8888-42b952c53a87.png)
 ### 상태 창 <br>
 - 상단에 남은시간, 사용시간, 사용자 이름, 자리가 표시되고 주문하기, 카운터 연락, 사용종료 메뉴가 있습니다.
+
+![Layer 11](https://user-images.githubusercontent.com/118651919/219660475-6bfb60f8-7dbd-4ee3-8332-d4576e3565d9.png)<br>
+![라면 검색 시](https://user-images.githubusercontent.com/118651919/219660722-3d40559c-c08c-4887-b220-b497371ee691.png)<br>
+![Layer 13](https://user-images.githubusercontent.com/118651919/219660737-f137d581-f994-499a-9cf9-02889fa8afbd.png)<br>
+![Layer 14](https://user-images.githubusercontent.com/118651919/219660744-878131e7-ef72-4f40-9b33-9ce89d4ce372.png)<br>
+
+### 주문하기 <br>
+- 각 탭에 있는 메뉴를 통해 음식을 주문 할 수 있습니다.
+- 메뉴 클릭 시 주문목록에 총 가격과 갯수가 입력됩니다.
+- 또는 아래 -, + 버튼을 통해서도 추가, 뺴기가 가능합니다.
+- 최종적으로 메뉴를 고른 후 결제방식과 요청사항(선택)를 입력시 주문이 됩니다.
+- 주문한 내역은 주문내역을 통해 확인 가능합니다.
