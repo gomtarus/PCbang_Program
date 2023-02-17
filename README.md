@@ -58,7 +58,7 @@ ex. salt = /9UFR5IJObK0t9QQ9oPaYQ== 비밀번호 = 1234 ====> /9UFR5IJObK0t9QQ9o
 ![Layer 26](https://user-images.githubusercontent.com/118651919/219674531-193b017b-1bbd-4bb7-a66e-d36870264c62.png)
 
 ### 회원관리 <br>
-- 회원을 추가, 검색, 정보 수정을 할 수 있습니다.
+- 회원을 추가, 검색, 제거, 수정을 할 수 있습니다.
 - 회원 비밀번호는 변경이 불가합니다.<br><br>
 
 ![Layer 17](https://user-images.githubusercontent.com/118651919/219674805-1f045ba1-0e4c-4173-a78a-e4cb136cd472.png)<br>
@@ -67,6 +67,5 @@ ex. salt = /9UFR5IJObK0t9QQ9oPaYQ== 비밀번호 = 1234 ====> /9UFR5IJObK0t9QQ9o
 ![Layer 20](https://user-images.githubusercontent.com/118651919/219674825-31e7dc37-f21e-41d3-9487-0b386bdd2058.png)
 
 ### 메뉴관리 <br>
-- 메뉴를 추가, 검색, 수정을 할 수 있습니다.
-- 회원 비밀번호는 변경이 불가합니다.
+- 메뉴를 추가, 검색, 제거, 수정을 할 수 있습니다.
 
