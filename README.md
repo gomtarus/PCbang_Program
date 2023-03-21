@@ -16,7 +16,7 @@
 
 ![소스](https://user-images.githubusercontent.com/118651919/219654784-d29b4768-c3fd-41ff-8834-3c017321426d.png)
 ### 비밀번호 생성 방법 <br>
-- 보안을 위해 비밀번호는 sh256 + salt 암호화로 보호되어 저장됩니다.
+- 보안을 위해 비밀번호는 sha256 + salt 암호화로 보호되어 저장됩니다.
 - 아이디 생성 시 임의의 salt를 생성한 후 유저 데이터에 넣습니다. 
 - 이렇게 생성 된 salt는 유저가 입력한 비밀번호 평문과 섞습니다.<br>
 ex. salt = /9UFR5IJObK0t9QQ9oPaYQ== 비밀번호 = 1234 ====> /9UFR5IJObK0t9QQ9oPaYQ==1234<br>
